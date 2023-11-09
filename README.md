@@ -18,10 +18,10 @@ Before running the script, make sure you have the following software and package
 
 To run the script, you should provide two command line arguments:
 
-1. `GSE_id`: The GEO identifier for the RNA-seq dataset you want to analyze.
+1. `sample_counts.tsv`: The RNA-seq counts dataset that you want to analyze.
 2. `sample_info.tsv`: A tab-separated file containing sample information, including sample IDs and group labels.
 
 For example, you can run the script using the following command:
 
 ```shell
-Rscript script.R GSE123456 sample_info.tsv
+Rscript script.R sample_counts.tsv sample_info.tsv

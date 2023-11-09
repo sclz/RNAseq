@@ -32,29 +32,24 @@ library_complexity_plot <- function(df) {
 # Ottieni gli argomenti dalla riga di comando
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 2) {
-  cat("Usage: Rscript script.R GSE_id sample_info.tsv\n")
+  cat("Usage: Rscript script.R count_table.tsv sample_info.tsv\n")
   q("no")
 }
 
 # Identificatore GEO
-gse_id <- args[1]
-#gse_id <- "GSE202755"
+count_path <- args[1]
+info_path <- args[2]
 # Percorso del file dei conteggi
-urld <- "https://www.ncbi.nlm.nih.gov/geo/download/?format=file&type=rnaseq_counts"
-path <- paste("acc=", gse_id, sep="")
-path2 <- paste("file=", gse_id, "_raw_counts_GRCh38.p13_NCBI.tsv.gz", sep="")
-path3 <- paste(urld, path, path2, sep="&");
-tbl <- as.matrix(data.table::fread(path3, header = T, colClasses = "integer"), rownames = "GeneID")
-
+tbl <- as.matrix(fread(count_path, header = T, colClasses = "integer"), rownames = "GeneID")
 #library_complexity_plot(as.data.frame(tbl))
 
 # Percorso del file di annotazioni dei geni
-apath <- paste(urld, "type=rnaseq_counts", "file=Human.GRCh38.p13.annot.tsv.gz", sep="&")
+apath <- "https://www.ncbi.nlm.nih.gov/geo/download/?format=file&type=rnaseq_counts&type=rnaseq_counts&file=Human.GRCh38.p13.annot.tsv.gz"
 annot <- data.table::fread(apath, header = T, quote = "", stringsAsFactors = F, data.table = F)
 rownames(annot) <- annot$GeneID
 
 # Carica il file sample_info.tsv
-sample_info <- read.table(args[2], header = T, stringsAsFactors = F)
+sample_info <- read.table(info_path, header = T, stringsAsFactors = F)
 #sample_info <- read.table("sample_info.tsv", header = T, stringsAsFactors = F)
 sample_info$Group <- factor(sample_info$Group)
 
@@ -100,11 +95,11 @@ tT <- subset(tT, select = c("GeneID", "padj", "pvalue", "lfcSE", "stat", "log2Fo
 # Scrivi i risultati in un file tabulato
 write.table(tT, file = "results.tsv", row.names = F, sep = "\t")
 
-plotDispEsts(ds, main = paste(gse_id, "Dispersion Estimates"))
+plotDispEsts(ds, main = "Dispersion Estimates")
 
 # create histogram plot of p-values
 hist(r$padj, breaks=seq(0, 1, length = 21), col = "grey", border = "white", 
-     xlab = "", ylab = "", main = paste(gse_id, "Frequencies of padj-values"))
+     xlab = "", ylab = "", main = "Frequencies of padj-values")
 
 
 
@@ -137,7 +132,7 @@ ord <- order(sample_info$Group)  # order samples by group
 palette(c("#1B9E77", "#7570B3", "#E7298A", "#E6AB02", "#D95F02",
           "#66A61E", "#A6761D", "#B32424", "#B324B3", "#666666"))
 par(mar=c(7,4,2,1))
-boxplot(dat[,ord], boxwex=0.6, notch=T, main=gse_id, ylab="lg(norm.counts)", outline=F, las=2, col=sample_info$Group[ord])
+boxplot(dat[,ord], boxwex=0.6, notch=T, ylab="lg(norm.counts)", outline=F, las=2, col=sample_info$Group[ord])
 legend("topleft", levels(sample_info$Group), fill=palette(), bty="n")
 
 # UMAP plot (multi-dimensional scaling)
